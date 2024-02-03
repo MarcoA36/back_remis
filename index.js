@@ -126,7 +126,7 @@ app.get("/viajes", async (req, res) => {
       query += `WHERE fecha = ? ORDER BY hora;`;
     } else {
       // query += `ORDER BY id DESC LIMIT 10;`;
-      query += `ORDER BY fecha DESC, hora DESC LIMIT 20;`;
+      query += `ORDER BY fecha DESC, hora DESC LIMIT 15;`;
     }
 
     db.query(query, [fecha], (err, result) => {
