@@ -6,21 +6,13 @@ const cors = require("cors");
 app.use(cors());
 app.use(express.json());
 
-// const db = mysql.createConnection({
-//   host: "localhost",
-//   user: "root",
-//   password: "",
-//   database: "remis",
-// });
-
 const PORT = process.env.PORT || 3001;
 
-const DB_HOST = process.env.DB_HOST || 'localhost'
-const DB_USER = process.env.DB_USER || 'root'
-const DB_PASSWORD = process.env.DB_PASSWORD || ''
-const DB_NAME = process.env.DB_NAME || 'remis'
-const DB_PORT = process.env.DB_PORT || 3306
-
+const DB_HOST = process.env.DB_HOST || "localhost";
+const DB_USER = process.env.DB_USER || "root";
+const DB_PASSWORD = process.env.DB_PASSWORD || "";
+const DB_NAME = process.env.DB_NAME || "remis";
+const DB_PORT = process.env.DB_PORT || 3306;
 
 const db = mysql.createConnection({
   host: DB_HOST,
@@ -29,8 +21,6 @@ const db = mysql.createConnection({
   port: DB_PORT,
   database: DB_NAME,
 });
-
-
 
 app.post("/login", async (req, res) => {
   const { usuario, contrasena } = req.body;
@@ -41,7 +31,7 @@ app.post("/login", async (req, res) => {
 
   db.query(
     "SELECT * FROM administradores WHERE usuario = ? AND contrasena = ?",
-    [usuario, contrasena], 
+    [usuario, contrasena],
     async (err, results) => {
       if (err) {
         console.error(err);
@@ -55,9 +45,9 @@ app.post("/login", async (req, res) => {
           usuario: {
             id: usuarioEncontrado.id_admin,
             usuario: usuarioEncontrado.usuario,
-          }
+          },
         });
-        console.log(usuarioEncontrado)
+        console.log(usuarioEncontrado);
       } else {
         // Usuario no encontrado o contraseña incorrecta
         res.status(401).json({ error: "Invalid credentials" });
@@ -65,7 +55,6 @@ app.post("/login", async (req, res) => {
     }
   );
 });
-
 
 //VIAJES
 
@@ -76,7 +65,7 @@ app.post("/nuevo-viaje", (req, res) => {
     const fecha = req.body.fecha;
     const hora = req.body.hora;
     const cliente = req.body.cliente;
-    const admin = req.body.id_usuario
+    const admin = req.body.id_usuario;
 
     if (!origen) {
       res.status(400).json({ error: "Todos los campos son requeridos" });
@@ -91,7 +80,12 @@ app.post("/nuevo-viaje", (req, res) => {
           console.error("Error en la consulta SQL:", err);
           res.status(500).json({ error: "Error interno del servidor" });
         } else {
-          res.status(200).json({ message: "Viaje registrado con éxito" });
+          // res.status(200).json({ message: "Viaje registrado con éxito" });
+          const id = result.insertId; // Asumiendo que estás usando una base de datos que proporciona el ID insertado
+          res.status(200).json({
+            message: "Viaje registrado con éxito",
+            id,
+          });
         }
       }
     );
@@ -101,11 +95,10 @@ app.post("/nuevo-viaje", (req, res) => {
   }
 });
 
-
 app.get("/viajes", async (req, res) => {
   try {
-     // Configuración regional para idioma español
-     await db.query("SET lc_time_names = 'es_ES';");
+    // Configuración regional para idioma español
+    await db.query("SET lc_time_names = 'es_ES';");
     const { fecha } = req.query;
 
     let query = `
@@ -126,7 +119,7 @@ app.get("/viajes", async (req, res) => {
       query += `WHERE fecha = ? ORDER BY hora;`;
     } else {
       // query += `ORDER BY id DESC LIMIT 10;`;
-      query += `ORDER BY fecha DESC, hora DESC LIMIT 20;`;
+      query += `ORDER BY fecha DESC, hora DESC LIMIT 15;`;
     }
 
     db.query(query, [fecha], (err, result) => {
@@ -142,7 +135,6 @@ app.get("/viajes", async (req, res) => {
     res.status(500).json({ error: "Error interno del servidor" });
   }
 });
-
 
 app.get("/estado-viaje", async (req, res) => {
   try {
@@ -261,9 +253,6 @@ app.delete("/eliminar-viaje/:id", (req, res) => {
   }
 });
 
-
-
-
 //MOVILES
 
 app.post("/nuevo-movil", (req, res) => {
@@ -289,7 +278,11 @@ app.post("/nuevo-movil", (req, res) => {
           console.error("Error en la consulta SQL:", err);
           res.status(500).json({ error: "Error interno del servidor" });
         } else {
-          res.status(200).json({ message: "Móvil registrado con éxito" });
+          const id = result.insertId;
+          res.status(200).json({
+            message: "Movil registrado con éxito",
+            id,
+          });
         }
       }
     );
@@ -299,30 +292,6 @@ app.post("/nuevo-movil", (req, res) => {
   }
 });
 
-// app.get("/moviles", async (req, res) => {
-//   try {
-//     const query = `
-//           SELECT 
-//             moviles.*, 
-//             choferes.nombre as nombre_chofer,
-//             choferes.apellido as apellido_chofer
-//           FROM moviles
-//           LEFT JOIN choferes ON moviles.id_chofer = choferes.id_chofer;
-//       `;
-
-//     db.query(query, (err, result) => {
-//       if (err) {
-//         console.error("Error en la consulta SQL:", err);
-//         res.status(500).json({ error: "Error interno del servidor" });
-//       } else {
-//         res.status(200).json(result);
-//       }
-//     });
-//   } catch (error) {
-//     console.error("Error inesperado:", error);
-//     res.status(500).json({ error: "Error interno del servidor" });
-//   }
-// });
 
 app.get("/moviles", async (req, res) => {
   try {
@@ -350,10 +319,6 @@ app.get("/moviles", async (req, res) => {
   }
 });
 
-
-
-
-
 app.patch("/editar-movil/:id", (req, res) => {
   try {
     const idMovil = req.params.id;
@@ -377,33 +342,7 @@ app.patch("/editar-movil/:id", (req, res) => {
   }
 });
 
-// app.delete("/eliminar-movil/:id", (req, res) => {
-//   try {
-//     const idMovil = req.params.id;
 
-//     db.query(
-//       "DELETE FROM moviles WHERE id_movil = ?",
-//       [idMovil],
-//       (err, result) => {
-//         if (err) {
-//           console.error("Error en la consulta SQL:", err);
-//           res.status(500).json({ error: "Error interno del servidor" });
-//         } else {
-//           if (result.affectedRows > 0) {
-//             res.status(200).json({ message: "Movil eliminado con éxito" });
-//           } else {
-//             res.status(404).json({
-//               error: "No se encontró el movil con el ID proporcionado",
-//             });
-//           }
-//         }
-//       }
-//     );
-//   } catch (error) {
-//     console.error("Error inesperado:", error);
-//     res.status(500).json({ error: "Error inesperado en el servidor" });
-//   }
-// });
 
 app.patch("/eliminar-movil/:id", (req, res) => {
   try {
@@ -432,11 +371,6 @@ app.patch("/eliminar-movil/:id", (req, res) => {
     res.status(500).json({ error: "Error inesperado en el servidor" });
   }
 });
-
-
-
-
-
 
 app.patch("/actualizar-estado-movil/:id", (req, res) => {
   const movilId = req.params.id;
@@ -476,10 +410,6 @@ app.patch("/asignar-chofer/:movilId", (req, res) => {
   );
 });
 
-
-
-
-
 //CHOFERES
 
 app.post("/nuevo-chofer", (req, res) => {
@@ -488,7 +418,7 @@ app.post("/nuevo-chofer", (req, res) => {
     const apellido = req.body.apellido;
     const dni = req.body.dni;
     const contacto = req.body.contacto;
-    const visible = true
+    const visible = true;
 
     if (!nombre || !apellido || !dni || !contacto) {
       res.status(400).json({ error: "Todos los campos son requeridos" });
@@ -503,7 +433,12 @@ app.post("/nuevo-chofer", (req, res) => {
           console.error("Error en la consulta SQL:", err);
           res.status(500).json({ error: "Error interno del servidor" });
         } else {
-          res.status(200).json({ message: "Móvil registrado con éxito" });
+          // res.status(200).json({ message: "Móvil registrado con éxito" });
+          const id = result.insertId;
+          res.status(200).json({
+            message: "Chofer registrado con éxito",
+            id,
+          });
         }
       }
     );
@@ -529,10 +464,6 @@ app.get("/choferes", async (req, res) => {
   }
 });
 
-
-
-
-
 app.patch("/editar-chofer/:id", (req, res) => {
   try {
     const idChofer = req.params.id;
@@ -555,7 +486,6 @@ app.patch("/editar-chofer/:id", (req, res) => {
     res.status(500).json({ error: "Error inesperado en el servidor" });
   }
 });
-
 
 app.patch("/eliminar-chofer/:id", (req, res) => {
   try {
@@ -585,9 +515,6 @@ app.patch("/eliminar-chofer/:id", (req, res) => {
   }
 });
 
-
-
-
 //FACTURACION
 
 // Cambia el nombre del parámetro a id_movil en la ruta
@@ -614,9 +541,8 @@ app.get("/liquidar-movil/:id_movil", async (req, res) => {
   }
 });
 
-
 app.patch("/liquidar/:id_movil", (req, res) => {
-  const id_movil= req.params.id_movil;
+  const id_movil = req.params.id_movil;
 
   db.query(
     "UPDATE viajes SET id_estado = 4 WHERE id_estado = 3 AND id_movil = ?",
@@ -626,25 +552,23 @@ app.patch("/liquidar/:id_movil", (req, res) => {
         console.error("Error en la consulta SQL:", err);
         res.status(500).json({ error: "Error interno del servidor" });
       } else {
-        res.status(200).json({ id_movil});
+        res.status(200).json({ id_movil });
       }
     }
   );
 });
 
-
-
 app.get("/facturados", async (req, res) => {
   try {
-    const fecha = req.query.fecha || new Date().toISOString().split('T')[0];
+    const fecha = req.query.fecha || new Date().toISOString().split("T")[0];
 
     db.query(
       "SELECT viajes.*, moviles.numero_movil, choferes.nombre AS nombre_chofer, choferes.apellido AS apellido_chofer " +
-      "FROM viajes " +
-      "LEFT JOIN moviles ON viajes.id_movil = moviles.id_movil " +
-      "LEFT JOIN choferes ON viajes.id_chofer = choferes.id_chofer " +
-      "WHERE viajes.id_estado = 4 AND viajes.fecha = ? " +
-      "ORDER BY viajes.hora",
+        "FROM viajes " +
+        "LEFT JOIN moviles ON viajes.id_movil = moviles.id_movil " +
+        "LEFT JOIN choferes ON viajes.id_chofer = choferes.id_chofer " +
+        "WHERE viajes.id_estado = 4 AND viajes.fecha = ? " +
+        "ORDER BY viajes.hora",
       [fecha],
       (err, result) => {
         if (err) {
@@ -660,11 +584,6 @@ app.get("/facturados", async (req, res) => {
     res.status(500).json({ error: "Error interno del servidor" });
   }
 });
-
-
-
-
-
 
 // const PORT = 3001;
 app.listen(PORT, () => {
