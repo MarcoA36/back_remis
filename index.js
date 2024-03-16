@@ -4,24 +4,6 @@ const mysql = require("mysql");
 const cors = require("cors");
 
 
-const qrcode = require('qrcode-terminal')
-const {Client, LocalAuth} = require('whatsapp-web.js')
-
-const client = new Client({
-  authStrategy: new LocalAuth()
-})
-
-client.on('qr', qr=>{
-    qrcode.generate(qr,{small:true})
-})
-
-client.on('ready', ()=> {
-  console.log('client is ready!')
-})
-
-client.initialize();
-
-
 app.use(cors());
 app.use(express.json());
 
@@ -270,27 +252,6 @@ app.delete("/eliminar-viaje/:id", (req, res) => {
     console.error("Error inesperado:", error);
     res.status(500).json({ error: "Error inesperado en el servidor" });
   }
-});
-
-
-
-
-
-//enviar viaje por whatsapp
-
-app.post('/enviar-mensaje', async(req, res) => {
-  const { tel, mensaje } = req.body;
-// const tel = '+5492284656640' // Número de teléfono en el formato adecuado
-const chatId = tel.substring(1) + "@c.us"
-const number_details = await client.getNumberId(chatId)
-
-if (number_details) {
-  // const mensaje = "Holaaaa bien ahi che"
-  await client.sendMessage(chatId, mensaje)
-  res.json({res:true})
-}else{
-  res.json({res:false})
-}
 });
 
 
